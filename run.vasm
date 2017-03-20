@@ -1,5 +1,6 @@
 PSH 5
 PSH 6
+LDR A 35
 ADD
 POP
 PSH 20
