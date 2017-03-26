@@ -166,10 +166,10 @@ std::unordered_map<int, vasm_func> vasm_functions {
 
 int main()
 {
-  program = parse_file();
-
   auto start = std::chrono::steady_clock::now();
   for(auto x=0;x<1001;++x){
+    program = parse_file();
+
     for(; registers[IP] != (int)program.size(); ++registers[IP]) {
       vasm_functions[program[registers[IP]]]();
     }
