@@ -141,7 +141,6 @@ int main()
         dump_registers();
         std::cin.get();
         exit(0);
-        break;
       default: ;
     }
   }
