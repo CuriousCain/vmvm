@@ -90,6 +90,12 @@ void dump_registers() {
   }
 }
 
+void dump_stack() {
+  for(auto& i:stack) {
+    printf("StackVal: %d\n", i);
+  }
+}
+
 std::vector<int> program;
 
 void push() {
@@ -146,47 +152,24 @@ void hlt() {
   exit(0);
 }
 
-std::unordered_map<
+typedef void(*vasm_func)(void);
+std::unordered_map<int, vasm_func> vasm_functions {
+  {PSH, &push},
+  {ADD, &add},
+  {SUB, &sub},
+  {MUL, &mul},
+  {DIV, &div},
+  {POP, &pop},
+  {LDR, &ldr},
+  {HLT, &hlt}
+};
 
 int main()
 {
   program = parse_file();
 
-  for(registers[IP]=0; registers[IP] != (int)program.size(); ++registers[IP]) {
-    switch (program[registers[IP]]) {
-      case PSH:
-        push();
-
-        break;
-      case ADD:
-        add();
-
-        break;
-      case SUB:
-        sub();
-
-        break;
-      case MUL:
-        mul();
-
-        break;
-      case DIV:
-        div();
-
-        break;
-      case POP:
-        pop();
-
-        break;
-      case LDR:
-        ldr();
-
-        break;
-      case HLT:
-        hlt();
-
-      default: ;
-    }
+  for(; registers[IP] != (int)program.size(); ++registers[IP]) {
+    vasm_functions[program[registers[IP]]]();
   }
 
   return 0;
