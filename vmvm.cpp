@@ -8,60 +8,60 @@
 #include <sstream>
 
 enum Instructions {
-	PSH, 
-	ADD, 
-	POP, 
-	SET, 
+  PSH, 
+  ADD, 
+  POP, 
+  SET, 
   SUB,
   MUL,
   DIV,
   LDR,
-	HLT
+  HLT
 };
 
 const std::unordered_map<std::string, Instructions> instruction_set {
-	{ "PSH", PSH },
-	{ "ADD", ADD },
-	{ "POP", POP },
-	{ "SET", SET },
-  { "SUB", SUB },
-  { "MUL", MUL },
-  { "DIV", DIV },
-  { "LDR", LDR },
-	{ "HLT", HLT }
+  { "PSH", PSH },
+    { "ADD", ADD },
+    { "POP", POP },
+    { "SET", SET },
+    { "SUB", SUB },
+    { "MUL", MUL },
+    { "DIV", DIV },
+    { "LDR", LDR },
+    { "HLT", HLT }
 };
 
 enum Registers {
-	A, B, C, D, E, F,
+  A, B, C, D, E, F,
   ACC,
-	SP, IP,
-	LEN
+  SP, IP,
+  LEN
 };
 
 const std::unordered_map<std::string, Registers> register_set {
   { "A", A },
-  { "B", B },
-  { "C", C },
-  { "D", D },
-  { "E", E },
-  { "F", F }
+    { "B", B },
+    { "C", C },
+    { "D", D },
+    { "E", E },
+    { "F", F }
 };
 
 std::vector<int> stack;
 std::vector<int> registers(LEN);
 
 std::vector<int> parse_file() {
-	std::vector<std::string> program_lines;
-	std::ifstream source_file("run.vasm");
-	std::string source_line;
+  std::vector<std::string> program_lines;
+  std::ifstream source_file("run.vasm");
+  std::string source_line;
 
-	if(source_file.is_open()) {
-		while (getline(source_file, source_line, '\n')) {
-			program_lines.push_back(source_line);
-		}
-	}
+  if(source_file.is_open()) {
+    while (getline(source_file, source_line, '\n')) {
+      program_lines.push_back(source_line);
+    }
+  }
 
-	std::vector<int> program_tokens;
+  std::vector<int> program_tokens;
 
   for(auto current_line:program_lines) {
     std::stringstream ss;
@@ -90,60 +90,105 @@ void dump_registers() {
   }
 }
 
+std::vector<int> program;
+
+void push() {
+  ++registers[IP];
+  stack.push_back(program[registers[IP]]);
+}
+
+void add() {
+  registers[ACC] = stack.back();
+  stack.pop_back();
+  registers[ACC] = stack.back() + registers[ACC];
+  stack.pop_back();
+  stack.push_back(registers[ACC]);
+}
+
+void sub() {
+  registers[ACC] = stack.back();
+  stack.pop_back();
+  registers[ACC] = stack.back() - registers[ACC];
+  stack.pop_back();
+  stack.push_back(registers[ACC]);
+}
+
+void mul() {
+  registers[ACC] = stack.back();
+  stack.pop_back();
+  registers[ACC] = stack.back() * registers[ACC];
+  stack.pop_back();
+  stack.push_back(registers[ACC]);
+}
+
+void div() {
+  registers[ACC] = stack.back();
+  stack.pop_back();
+  registers[ACC] = stack.back() / registers[ACC];
+  stack.pop_back();
+  stack.push_back(registers[ACC]);
+}
+
+void pop() {
+  printf("POP: %d\n", stack.back());
+  stack.pop_back();
+}
+
+void ldr() {
+  ++registers[IP];
+  registers[program[registers[IP]]] = program[registers[IP]+1];
+  ++registers[IP];
+}
+
+void hlt() {
+  dump_registers();
+  std::cin.get();
+  exit(0);
+}
+
+std::unordered_map<
+
 int main()
 {
-  auto program = parse_file();
+  program = parse_file();
 
-  for(size_t ip=0; ip != program.size(); ++ip) {
-    switch (program[ip]) {
+  for(registers[IP]=0; registers[IP] != (int)program.size(); ++registers[IP]) {
+    switch (program[registers[IP]]) {
       case PSH:
-        ++ip;
-        stack.push_back(program[ip]);
+        push();
+
         break;
       case ADD:
-        registers[ACC] = stack.back();
-        stack.pop_back();
-        registers[ACC] = stack.back() + registers[ACC];
-        stack.pop_back();
-        stack.push_back(registers[ACC]);
+        add();
+
         break;
       case SUB:
-        registers[ACC] = stack.back();
-        stack.pop_back();
-        registers[ACC] = stack.back() - registers[ACC];
-        stack.pop_back();
-        stack.push_back(registers[ACC]);
+        sub();
+
         break;
       case MUL:
-        registers[ACC] = stack.back();
-        stack.pop_back();
-        registers[ACC] = stack.back() * registers[ACC];
-        stack.pop_back();
-        stack.push_back(registers[ACC]);
+        mul();
+
         break;
       case DIV:
-        registers[ACC] = stack.back();
-        stack.pop_back();
-        registers[ACC] = stack.back() / registers[ACC];
-        stack.pop_back();
-        stack.push_back(registers[ACC]);
+        div();
+
         break;
       case POP:
-        printf("POP: %d\n", stack.back());
-        stack.pop_back();
+        pop();
+
         break;
       case LDR:
-        ++ip;
-        registers[program[ip]] = program[ip+1];
-        ++ip;
+        ldr();
+
         break;
       case HLT:
-        dump_registers();
-        std::cin.get();
-        exit(0);
+        hlt();
+
       default: ;
     }
   }
 
   return 0;
 }
+
