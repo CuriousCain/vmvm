@@ -6,7 +6,6 @@
 #include <map>
 #include <unordered_map>
 #include <sstream>
-#include <chrono>
 
 enum Instructions {
   PSH, 
@@ -166,18 +165,11 @@ std::unordered_map<int, vasm_func> vasm_functions {
 
 int main()
 {
-  auto start = std::chrono::steady_clock::now();
-  for(auto x=0;x<1001;++x){
-    program = parse_file();
+  program = parse_file();
 
-    for(; registers[IP] != (int)program.size(); ++registers[IP]) {
-      vasm_functions[program[registers[IP]]]();
-    }
-    registers[IP] = 0;
+  for(; registers[IP] != (int)program.size(); ++registers[IP]) {
+    vasm_functions[program[registers[IP]]]();
   }
-  auto end = std::chrono::steady_clock::now();
-  auto diff = end-start;
-  std::cout << std::chrono::duration<double, std::milli> (diff).count() << "ms" << std::endl;
 
   return 0;
 }
