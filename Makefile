@@ -3,4 +3,4 @@ all:
 	clang++ -std=c++14 *.cpp -lstdc++ -o bin/vmvm
 
 run:
-	bin/vmvm
+	bin/vmvm run.vasm

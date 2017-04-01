@@ -48,9 +48,9 @@ const std::unordered_map<std::string, Registers> register_set {
 std::vector<int> stack;
 std::vector<int> registers(LEN);
 
-std::vector<std::string> get_lines() {
+std::vector<std::string> get_lines(std::string filename) {
   std::vector<std::string> file_lines;
-  std::ifstream source_file("run.vasm");
+  std::ifstream source_file(filename);
   std::string source_line;
 
   if(source_file.is_open()) {
@@ -62,10 +62,10 @@ std::vector<std::string> get_lines() {
   return file_lines;
 }
 
-std::vector<int> parse_file() {
+std::vector<int> parse_file(std::string filename) {
   std::vector<int> program_tokens;
 
-  for(auto current_line:get_lines()) {
+  for(auto current_line:get_lines(filename)) {
     std::stringstream ss;
     ss.str(current_line);
     std::string token;
@@ -168,9 +168,14 @@ std::unordered_map<int, vasm_func> vasm_functions {
   {HLT, &hlt}
 };
 
-int main()
+int main(int argc, char* argv[])
 {
-  program = parse_file();
+  if(argc < 2) {
+    printf("%s: Incorrect number of arguments\n", argv[0]);
+    exit(0);
+  }
+
+  program = parse_file(argv[1]);
 
   for(; registers[IP] != static_cast<int>(program.size()); ++registers[IP]) {
     vasm_functions[program[registers[IP]]]();
