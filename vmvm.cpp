@@ -1,6 +1,4 @@
 #include <vector>
-#include <algorithm>
-#include <iostream>
 #include <fstream>
 #include <string>
 #include <map>
@@ -50,31 +48,38 @@ const std::unordered_map<std::string, Registers> register_set {
 std::vector<int> stack;
 std::vector<int> registers(LEN);
 
-std::vector<int> parse_file() {
-  std::vector<std::string> program_lines;
+std::vector<std::string> get_lines() {
+  std::vector<std::string> file_lines;
   std::ifstream source_file("run.vasm");
   std::string source_line;
 
   if(source_file.is_open()) {
     while (getline(source_file, source_line, '\n')) {
-      program_lines.push_back(source_line);
+      file_lines.push_back(source_line);
     }
   }
 
+  return file_lines;
+}
+
+std::vector<int> parse_file() {
   std::vector<int> program_tokens;
 
-  for(auto current_line:program_lines) {
+  for(auto current_line:get_lines()) {
     std::stringstream ss;
     ss.str(current_line);
     std::string token;
     while(getline(ss, token, ' ')) {
       if(instruction_set.find(token) != instruction_set.end()) {
+        // Push instruction
         program_tokens.push_back(instruction_set.at(token));
       } else {
         // TODO: Validate
         if(program_tokens.back() == LDR) {
+          // Push register
           program_tokens.push_back(register_set.at(token));
         } else {
+          // Push data/parameter
           program_tokens.push_back(std::stoi(token));
         }
       }
@@ -167,10 +172,9 @@ int main()
 {
   program = parse_file();
 
-  for(; registers[IP] != (int)program.size(); ++registers[IP]) {
+  for(; registers[IP] != static_cast<int>(program.size()); ++registers[IP]) {
     vasm_functions[program[registers[IP]]]();
   }
 
   return 0;
 }
-
