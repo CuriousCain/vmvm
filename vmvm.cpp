@@ -4,6 +4,7 @@
 #include <map>
 #include <unordered_map>
 #include <sstream>
+#include "util.h"
 
 enum Instructions {
   PSH, 
@@ -89,18 +90,6 @@ std::vector<int> parse_file(std::string filename) {
   return program_tokens;
 }
 
-void dump_registers() {
-  for(auto& i:registers) {
-    printf("RegVal: %d\n", i);
-  }
-}
-
-void dump_stack() {
-  for(auto& i:stack) {
-    printf("StackVal: %d\n", i);
-  }
-}
-
 std::vector<int> program;
 
 void push() {
@@ -152,8 +141,8 @@ void ldr() {
 }
 
 void hlt() {
-  dump_registers();
-  //exit(0);
+  util::dump(registers, "REGISTERS");
+  exit(0);
 }
 
 typedef void(*vasm_func)(void);
