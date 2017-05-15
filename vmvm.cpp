@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <sstream>
 #include "util.h"
+#include <iostream>
 
 enum Instructions {
   PSH, 
@@ -63,6 +64,23 @@ std::vector<std::string> get_lines(std::string filename) {
   return file_lines;
 }
 
+void load_instruction(std::vector<int>* program_tokens, Instructions instruction) {
+	program_tokens->push_back(instruction);
+}
+
+void load_register(std::vector<int>* program_tokens, Registers ld_register) {
+	program_tokens->push_back(ld_register);
+}
+
+void load_data(std::vector<int>* program_tokens, int data) {
+	program_tokens->push_back(data);
+}
+
+bool token_is_instruction(std::string token) {
+	if(instruction_set.find(token) == instruction_set.end()) return false;
+	return true;
+}
+
 std::vector<int> parse_file(std::string filename) {
   std::vector<int> program_tokens;
 
@@ -71,17 +89,14 @@ std::vector<int> parse_file(std::string filename) {
     ss.str(current_line);
     std::string token;
     while(getline(ss, token, ' ')) {
-      if(instruction_set.find(token) != instruction_set.end()) {
-        // Push instruction
-        program_tokens.push_back(instruction_set.at(token));
+      if(token_is_instruction(token)) {
+				load_instruction(&program_tokens, instruction_set.at(token));
       } else {
         // TODO: Validate
         if(program_tokens.back() == LDR) {
-          // Push register
-          program_tokens.push_back(register_set.at(token));
+					load_register(&program_tokens, register_set.at(token));
         } else {
-          // Push data/parameter
-          program_tokens.push_back(std::stoi(token));
+					load_data(&program_tokens, stoi(token));
         }
       }
     }
